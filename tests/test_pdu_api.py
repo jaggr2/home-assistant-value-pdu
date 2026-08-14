@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+
 import pytest
 from aiohttp.test_utils import TestClient
 from xml.etree import ElementTree
@@ -12,6 +14,16 @@ pdu_api = load_module("pdu_api", "pdu_api.py")
 parse_status_xml = pdu_api.parse_status_xml
 ValuePDU = pdu_api.ValuePDU
 PDUSessionError = pdu_api.PDUSessionError
+
+
+def test_basic_auth_header_is_well_formed():
+    """Regression: encode_basic_auth() already includes 'Basic ' — do not
+    prepend it again or the PDU rejects control commands with HTTP 401."""
+    client = ValuePDU(
+        host="192.168.1.4", username="admin", password="admin", session=object()
+    )
+    header = client._headers["Authorization"]
+    assert header == "Basic " + base64.b64encode(b"admin:admin").decode()
 
 
 def test_parse_status_xml_full():

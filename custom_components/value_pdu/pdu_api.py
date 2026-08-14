@@ -101,9 +101,8 @@ class ValuePDU:
     ) -> None:
         self._host = host.rstrip("/")
         self._base_url = f"http://{self._host}"
-        self._headers = {
-            "Authorization": f"Basic {aiohttp.encode_basic_auth(username, password)}"
-        }
+        # encode_basic_auth() already returns the full "Basic <b64>" header value.
+        self._headers = {"Authorization": aiohttp.encode_basic_auth(username, password)}
         self._session = session
         self._timeout = aiohttp.ClientTimeout(total=timeout)
 

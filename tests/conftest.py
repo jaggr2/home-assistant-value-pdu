@@ -38,20 +38,24 @@ def _gzip_response(text: str) -> web.Response:
 def _make_app() -> web.Application:
     """A fake PDU: gzip status.xml + a control endpoint that records queries."""
     control_queries: list[dict[str, str]] = []
+    auth_headers: list[str] = []
 
     async def handle_status(request: web.Request) -> web.Response:
         if request.app.get("fail_status"):
             return web.Response(status=500)
+        auth_headers.append(request.headers.get("Authorization", ""))
         return _gzip_response(STATUS_XML)
 
     async def handle_control(request: web.Request) -> web.Response:
         control_queries.append(dict(request.query))
+        auth_headers.append(request.headers.get("Authorization", ""))
         return web.Response(text="ok")
 
     app = web.Application()
     app.router.add_get("/status.xml", handle_status)
     app.router.add_get("/control_outlet.htm", handle_control)
     app["control_queries"] = control_queries
+    app["auth_headers"] = auth_headers
     app["fail_status"] = False
     return app
 
@@ -69,3 +73,8 @@ async def pdu_client() -> TestClient:
 @pytest.fixture
 def control_queries(pdu_client: TestClient) -> list[dict[str, str]]:
     return pdu_client.server.app["control_queries"]
+
+
+@pytest.fixture
+def auth_headers(pdu_client: TestClient) -> list[str]:
+    return pdu_client.server.app["auth_headers"]
