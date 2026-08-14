@@ -1,0 +1,14 @@
+cycle_outlet:
+  name: Cycle outlet
+  description: Power-cycle (ON/OFF) an outlet.
+  fields:
+    outlet:
+      name: Outlet
+      description: 0-based outlet index (0-7).
+      example: 3
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 7
+          mode: box

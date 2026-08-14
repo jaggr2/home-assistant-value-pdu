@@ -1,0 +1,55 @@
+"""Switch platform for the Value IP PDU integration."""
+
+from __future__ import annotations
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.components.switch import SwitchEntity
+
+from .const import DOMAIN, OUTLET_COUNT, SWITCH_DEVICE_CLASS
+from .coordinator import ValuePDUCoordinator
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up the Value IP PDU outlet switches."""
+    coordinator: ValuePDUCoordinator = hass.data[DOMAIN][entry.entry_id]
+    async_add_entities(
+        ValuePDUOutletSwitch(coordinator, entry, index) for index in range(OUTLET_COUNT)
+    )
+
+
+class ValuePDUOutletSwitch(CoordinatorEntity, SwitchEntity):
+    """One outlet of the PDU, exposed as an on/off switch."""
+
+    def __init__(self, coordinator: ValuePDUCoordinator, entry: ConfigEntry, index: int) -> None:
+        super().__init__(coordinator)
+        self._index = index
+        self._attr_device_info = coordinator.device_info
+        self._attr_unique_id = f"{entry.entry_id}_outlet_{index}"
+        self._attr_name = f"Outlet {index + 1}"
+        self._attr_has_entity_name = True
+        self._attr_device_class = SWITCH_DEVICE_CLASS
+
+    @property
+    def icon(self) -> str:
+        return "mdi:power-plug" if self.is_on else "mdi:power-plug-off"
+
+    @property
+    def is_on(self) -> bool:
+        if self.coordinator.data is None:
+            return False
+        return self.coordinator.data.outlets[self._index]
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Turn the outlet on."""
+        await self.coordinator.async_turn_on({self._index})
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Turn the outlet off."""
+        await self.coordinator.async_turn_off({self._index})

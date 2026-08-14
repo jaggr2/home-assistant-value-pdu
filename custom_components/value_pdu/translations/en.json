@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Value IP PDU",
+        "description": "Connect to your VALUE IP PDU at its HTTP management interface.",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "username": "Username",
+          "password": "Password",
+          "scan_interval": "Poll interval (seconds)",
+          "nominal_voltage": "Nominal voltage (V)",
+          "voltage_sensor": "Voltage source sensor"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the PDU. Check the host and credentials."
+    },
+    "abort": {
+      "already_configured": "This PDU is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Value IP PDU options",
+        "description": "Adjust polling and power calculation settings.",
+        "data": {
+          "scan_interval": "Poll interval (seconds)",
+          "nominal_voltage": "Nominal voltage (V)",
+          "voltage_sensor": "Voltage source sensor"
+        }
+      }
+    }
+  }
+}
