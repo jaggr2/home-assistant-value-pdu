@@ -45,6 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_config_entry_first_refresh()
     except (PDUSessionError, TimeoutError) as err:
         raise ConfigEntryNotReady(f"PDU not reachable: {err}") from err
+    await coordinator.async_fetch_delays()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 

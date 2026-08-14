@@ -80,6 +80,14 @@ For security, you can mark any outlet as **read-only** in the options dialog. A 
 
 Automations can still **read** the switch state of a locked outlet; they just cannot change it.
 
+### ON/OFF delays
+
+The PDU applies a configurable **ON delay** and **OFF delay** per outlet (set in the PDU's own web UI under *PDU → Socket*). The integration reads these delays from the device and accounts for them when switching:
+
+- After you toggle an outlet, the switch keeps showing the **target** state instead of reverting when the first poll still reads the old (not-yet-switched) state.
+- A refresh is scheduled for when the delay elapses, so the UI confirms the physical change at the right moment.
+- Each switch exposes its current `on_delay` / `off_delay` (seconds) as state attributes.
+
 ### `value_pdu.cycle_outlet` service
 
 Power-cycles an outlet for use in automations (buttons cover this in the UI):

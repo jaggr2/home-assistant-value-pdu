@@ -54,11 +54,17 @@ def _make_app() -> web.Application:
         body = "控制成功 执行中 已开启".encode("gb2312")
         return web.Response(body=body, content_type="text/html")
 
+    async def handle_config_pdu(request: web.Request) -> web.Response:
+        html = request.app.get("config_pdu_html", "")
+        return web.Response(body=html.encode("gb2312"), content_type="text/html")
+
     app = web.Application()
     app.router.add_get("/status.xml", handle_status)
     app.router.add_get("/control_outlet.htm", handle_control)
+    app.router.add_get("/config_PDU.htm", handle_config_pdu)
     app["control_queries"] = control_queries
     app["auth_headers"] = auth_headers
+    app["config_pdu_html"] = ""
     app["fail_status"] = False
     return app
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -46,9 +47,20 @@ class ValuePDUOutletSwitch(CoordinatorEntity, SwitchEntity):
 
     @property
     def is_on(self) -> bool:
+        # While a command is within its configured ON/OFF delay window the PDU
+        # has not physically switched yet; keep showing the target state so a
+        # stale poll cannot revert the UI.
+        pending = self.coordinator.outlet_pending(self._index)
+        if pending is not None:
+            return pending
         if self.coordinator.data is None:
             return False
         return self.coordinator.data.outlets[self._index]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        on_delay, off_delay = self.coordinator.outlet_delay(self._index)
+        return {"on_delay": on_delay, "off_delay": off_delay}
 
     async def _async_guard_locked(self) -> bool:
         """Return True (and ignore the command) if the outlet is read-only."""

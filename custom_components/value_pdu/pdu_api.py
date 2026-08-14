@@ -16,6 +16,7 @@ aiohttp transparently decodes Content-Encoding: gzip.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
@@ -34,6 +35,10 @@ FIELD_HUMIDITY = "humBan"
 FIELD_STATUS = "stat0"
 FIELD_OUTLET_STATE = "outletStat{index}"
 OUTLET_COUNT = 8
+
+# Per-outlet ON/OFF delays, exposed as form fields on config_PDU.htm (GB2312).
+DELAY_ON_RE = re.compile(r'name="ondly(\d)"[^>]*value="(\d+)"')
+DELAY_OFF_RE = re.compile(r'name="ofdly(\d)"[^>]*value="(\d+)"')
 
 
 class PDUSessionError(Exception):
@@ -88,6 +93,20 @@ def parse_status_xml(xml_text: str) -> PDUSnapshot:
     )
 
 
+def parse_delays_html(html: str) -> dict[int, tuple[int, int]]:
+    """Parse per-outlet (on_delay, off_delay) seconds from config_PDU.htm.
+
+    Pure function (no I/O) so it can be unit-tested. Missing outlets default
+    to (0, 0) — i.e. immediate switching.
+    """
+    on_delays = {int(i): int(v) for i, v in DELAY_ON_RE.findall(html)}
+    off_delays = {int(i): int(v) for i, v in DELAY_OFF_RE.findall(html)}
+    return {
+        index: (on_delays.get(index, 0), off_delays.get(index, 0))
+        for index in range(OUTLET_COUNT)
+    }
+
+
 class ValuePDU:
     """HTTP client for a single VALUE IP PDU."""
 
@@ -123,6 +142,25 @@ class ValuePDU:
         params = {f"outlet{index}": "1" for index in outlets}
         params["op"] = op
         await self._async_ensure_ok("/control_outlet.htm", params=params)
+
+    async def async_fetch_delays(self) -> dict[int, tuple[int, int]]:
+        """Fetch per-outlet ON/OFF delays (seconds) from config_PDU.htm.
+
+        The page is served in GB2312; it is decoded before parsing.
+        """
+        url = f"{self._base_url}/config_PDU.htm"
+        try:
+            async with self._session.get(
+                url, headers=self._headers, timeout=self._timeout
+            ) as response:
+                if response.status != 200:
+                    raise PDUSessionError(f"HTTP {response.status} from {url}")
+                body = await response.read()
+        except aiohttp.ClientError as err:
+            raise PDUSessionError(f"Cannot reach {url}: {err}") from err
+        except TimeoutError as err:
+            raise PDUSessionError(f"Timeout reaching {url}") from err
+        return parse_delays_html(body.decode("gb2312", errors="replace"))
 
     async def _async_ensure_ok(self, path: str, params: dict[str, str] | None = None) -> None:
         """GET a path and raise if it is not HTTP 200.

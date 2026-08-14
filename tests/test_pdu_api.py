@@ -16,7 +16,38 @@ ValuePDU = pdu_api.ValuePDU
 PDUSessionError = pdu_api.PDUSessionError
 
 
-def test_basic_auth_header_is_well_formed():
+def test_parse_delays_html():
+    html = (
+        '<input name="ondly0" value="5" maxlength="3">'
+        '<input name="ofdly0" value="5" maxlength="3">'
+        '<input name="ondly1" value="6" maxlength="3">'
+        '<input name="ofdly1" value="6" maxlength="3">'
+    )
+    delays = pdu_api.parse_delays_html(html)
+    assert delays[0] == (5, 5)
+    assert delays[1] == (6, 6)
+    # Outlets absent from the page fall back to immediate switching.
+    assert delays[7] == (0, 0)
+    assert len(delays) == 8
+
+
+async def test_fetch_delays_via_gb2312(pdu_client: TestClient):
+    pdu_client.server.app["config_pdu_html"] = (
+        '<input name="ondly0" value="9">'
+        '<input name="ofdly0" value="4">'
+    )
+    client = ValuePDU(
+        host=f"{pdu_client.host}:{pdu_client.port}",
+        username="admin",
+        password="admin",
+        session=pdu_client.session,
+    )
+    delays = await client.async_fetch_delays()
+    assert delays[0] == (9, 4)
+    assert delays[7] == (0, 0)
+
+
+async def test_basic_auth_header_is_well_formed():
     """Regression: encode_basic_auth() already includes 'Basic ' — do not
     prepend it again or the PDU rejects control commands with HTTP 401."""
     client = ValuePDU(
