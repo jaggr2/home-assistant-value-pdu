@@ -122,7 +122,30 @@ class ValuePDU:
         """
         params = {f"outlet{index}": "1" for index in outlets}
         params["op"] = op
-        await self._async_get_text("/control_outlet.htm", params=params)
+        await self._async_ensure_ok("/control_outlet.htm", params=params)
+
+    async def _async_ensure_ok(self, path: str, params: dict[str, str] | None = None) -> None:
+        """GET a path and raise if it is not HTTP 200.
+
+        The body is read but NOT decoded: the device serves the control page
+        in GB2312, whose bytes are not valid UTF-8.
+        """
+        try:
+            async with self._session.get(
+                f"{self._base_url}{path}",
+                params=params,
+                headers=self._headers,
+                timeout=self._timeout,
+            ) as response:
+                if response.status != 200:
+                    raise PDUSessionError(
+                        f"HTTP {response.status} from {self._base_url}{path}"
+                    )
+                await response.read()
+        except aiohttp.ClientError as err:
+            raise PDUSessionError(f"Cannot reach {self._base_url}{path}: {err}") from err
+        except TimeoutError as err:
+            raise PDUSessionError(f"Timeout reaching {self._base_url}{path}") from err
 
     async def _async_get_text(self, path: str, params: dict[str, str] | None = None) -> str:
         try:

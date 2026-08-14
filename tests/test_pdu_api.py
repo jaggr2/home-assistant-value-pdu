@@ -89,6 +89,18 @@ async def test_control_outlet_sends_expected_params(
     assert control_queries == [{"outlet0": "1", "outlet3": "1", "op": "2"}]
 
 
+async def test_control_outlet_tolerates_gb2312_body(pdu_client: TestClient):
+    """Regression: the device's control page is GB2312 (not UTF-8); the client
+    must check the status code without decoding the body."""
+    client = ValuePDU(
+        host=f"{pdu_client.host}:{pdu_client.port}",
+        username="admin",
+        password="admin",
+        session=pdu_client.session,
+    )
+    await client.async_control_outlets({1}, "1")
+
+
 async def test_fetch_status_rejects_bad_status(pdu_client: TestClient):
     pdu_client.server.app["fail_status"] = True
     client = ValuePDU(

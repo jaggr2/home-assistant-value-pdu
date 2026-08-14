@@ -49,7 +49,10 @@ def _make_app() -> web.Application:
     async def handle_control(request: web.Request) -> web.Response:
         control_queries.append(dict(request.query))
         auth_headers.append(request.headers.get("Authorization", ""))
-        return web.Response(text="ok")
+        # The real device serves its control page in GB2312 — bytes that are
+        # NOT valid UTF-8. The client must not decode this response.
+        body = "控制成功 执行中 已开启".encode("gb2312")
+        return web.Response(body=body, content_type="text/html")
 
     app = web.Application()
     app.router.add_get("/status.xml", handle_status)
