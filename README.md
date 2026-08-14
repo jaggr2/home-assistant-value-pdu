@@ -87,6 +87,7 @@ The PDU applies a configurable **ON delay** and **OFF delay** per outlet (set in
 - After you toggle an outlet, the switch keeps showing the **target** state instead of reverting when the first poll still reads the old (not-yet-switched) state.
 - A refresh is scheduled for when the delay elapses, so the UI confirms the physical change at the right moment.
 - Each switch exposes its current `on_delay` / `off_delay` (seconds) as state attributes.
+- While an outlet is within its delay window, **further commands on it are rejected** (switch, cycle button, and `value_pdu.cycle_outlet`) with a clear "still switching — wait for the ON/OFF delay" error.
 
 ### `value_pdu.cycle_outlet` service
 

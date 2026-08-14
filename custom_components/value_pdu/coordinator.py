@@ -190,6 +190,14 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
             raise HomeAssistantError(
                 f"Outlet {', '.join(str(i) for i in locked)} is read-only"
             )
+        busy = self._busy_outlets(outlets)
+        if busy:
+            details = ", ".join(
+                f"{index + 1} ({remaining:.0f}s)" for index, remaining in busy.items()
+            )
+            raise HomeAssistantError(
+                f"Outlet {details} is still switching — wait for the ON/OFF delay"
+            )
         await self._api.async_control_outlets(outlets, op)
 
         max_delay = 0.0
@@ -201,6 +209,16 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
         await self.async_request_refresh()
         if max_delay > 0:
             async_call_later(self.hass, max_delay, self._async_on_delay_elapsed)
+
+    def _busy_outlets(self, outlets: set[int]) -> dict[int, float]:
+        """Return {index: remaining_seconds} for outlets with an in-flight command."""
+        now = time.monotonic()
+        busy: dict[int, float] = {}
+        for index in outlets:
+            pending = self._pending.get(index)
+            if pending is not None and now < pending[1]:
+                busy[index] = pending[1] - now
+        return busy
 
     def _command_target(self, index: int, op: str) -> tuple[bool, float]:
         """Return (target_state, delay_seconds) for a command on an outlet."""
