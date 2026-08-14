@@ -62,7 +62,7 @@ During setup you provide:
 - **Nominal voltage** — default `230 V`
 - **Voltage source sensor** — optional; any HA sensor with `device_class: voltage`
 
-All of the above (except credentials) can be changed later via the entry's **Configure** (options) dialog.
+**Username, password, poll interval, nominal voltage and voltage source can all be changed later** via the entry's **Configure** (options) dialog — the integration reloads automatically, so credential changes don't require removing and re-adding the entry.
 
 ### `value_pdu.cycle_outlet` service
 

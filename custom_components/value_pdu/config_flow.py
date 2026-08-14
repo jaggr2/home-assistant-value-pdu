@@ -131,11 +131,22 @@ class ValuePDUOptionsFlow(OptionsFlow):
         options = self._config_entry.options
         data = self._config_entry.data
 
+        def _current(key: str, default=None):
+            return options.get(key, data.get(key, default))
+
         options_schema = vol.Schema(
             {
                 vol.Required(
+                    CONF_USERNAME,
+                    default=_current(CONF_USERNAME, DEFAULT_USERNAME),
+                ): TextSelector(),
+                vol.Required(
+                    CONF_PASSWORD,
+                    default=_current(CONF_PASSWORD, DEFAULT_PASSWORD),
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
+                vol.Required(
                     CONF_SCAN_INTERVAL,
-                    default=options.get(CONF_SCAN_INTERVAL, data.get(CONF_SCAN_INTERVAL)),
+                    default=_current(CONF_SCAN_INTERVAL),
                 ): NumberSelector(
                     NumberSelectorConfig(
                         min=MIN_UPDATE_INTERVAL_SECONDS,
@@ -146,9 +157,7 @@ class ValuePDUOptionsFlow(OptionsFlow):
                 ),
                 vol.Required(
                     CONF_NOMINAL_VOLTAGE,
-                    default=options.get(
-                        CONF_NOMINAL_VOLTAGE, data.get(CONF_NOMINAL_VOLTAGE, DEFAULT_NOMINAL_VOLTAGE)
-                    ),
+                    default=_current(CONF_NOMINAL_VOLTAGE, DEFAULT_NOMINAL_VOLTAGE),
                 ): NumberSelector(
                     NumberSelectorConfig(
                         min=90,
@@ -160,7 +169,7 @@ class ValuePDUOptionsFlow(OptionsFlow):
                 ),
                 vol.Optional(
                     CONF_VOLTAGE_SENSOR,
-                    default=options.get(CONF_VOLTAGE_SENSOR, data.get(CONF_VOLTAGE_SENSOR)),
+                    default=_current(CONF_VOLTAGE_SENSOR),
                 ): EntitySelector(
                     EntitySelectorConfig(domain="sensor", device_class="voltage")
                 ),
