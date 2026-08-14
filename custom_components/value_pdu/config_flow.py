@@ -24,16 +24,19 @@ from homeassistant.helpers.selector import (
 from .const import (
     CONF_HOST,
     CONF_NOMINAL_VOLTAGE,
+    CONF_OUTLET_NAMES,
     CONF_PASSWORD,
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
     CONF_VOLTAGE_SENSOR,
     DEFAULT_NOMINAL_VOLTAGE,
+    DEFAULT_OUTLET_NAMES,
     DEFAULT_PASSWORD,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_USERNAME,
     DOMAIN,
     MIN_UPDATE_INTERVAL_SECONDS,
+    OUTLET_COUNT,
 )
 from .pdu_api import PDUSessionError, ValuePDU
 
@@ -126,6 +129,11 @@ class ValuePDUOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
+            names = {
+                str(index): user_input.pop(f"outlet_name_{index}")
+                for index in range(OUTLET_COUNT)
+            }
+            user_input[CONF_OUTLET_NAMES] = names
             return self.async_create_entry(title="", data=user_input)
 
         options = self._config_entry.options
@@ -134,46 +142,61 @@ class ValuePDUOptionsFlow(OptionsFlow):
         def _current(key: str, default=None):
             return options.get(key, data.get(key, default))
 
-        options_schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_USERNAME,
-                    default=_current(CONF_USERNAME, DEFAULT_USERNAME),
-                ): TextSelector(),
-                vol.Required(
-                    CONF_PASSWORD,
-                    default=_current(CONF_PASSWORD, DEFAULT_PASSWORD),
-                ): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
-                vol.Required(
-                    CONF_SCAN_INTERVAL,
-                    default=_current(CONF_SCAN_INTERVAL),
-                ): NumberSelector(
-                    NumberSelectorConfig(
-                        min=MIN_UPDATE_INTERVAL_SECONDS,
-                        max=3600,
-                        mode=NumberSelectorMode.BOX,
-                        unit_of_measurement="s",
-                    )
-                ),
-                vol.Required(
-                    CONF_NOMINAL_VOLTAGE,
-                    default=_current(CONF_NOMINAL_VOLTAGE, DEFAULT_NOMINAL_VOLTAGE),
-                ): NumberSelector(
-                    NumberSelectorConfig(
-                        min=90,
-                        max=300,
-                        step=0.1,
-                        mode=NumberSelectorMode.BOX,
-                        unit_of_measurement="V",
-                    )
-                ),
+        outlet_names = {
+            str(index): options.get(CONF_OUTLET_NAMES, {}).get(
+                str(index), DEFAULT_OUTLET_NAMES[index]
+            )
+            for index in range(OUTLET_COUNT)
+        }
+
+        schema_fields: dict = {
+            vol.Required(
+                CONF_USERNAME,
+                default=_current(CONF_USERNAME, DEFAULT_USERNAME),
+            ): TextSelector(),
+            vol.Required(
+                CONF_PASSWORD,
+                default=_current(CONF_PASSWORD, DEFAULT_PASSWORD),
+            ): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
+            vol.Required(
+                CONF_SCAN_INTERVAL,
+                default=_current(CONF_SCAN_INTERVAL),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=MIN_UPDATE_INTERVAL_SECONDS,
+                    max=3600,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="s",
+                )
+            ),
+            vol.Required(
+                CONF_NOMINAL_VOLTAGE,
+                default=_current(CONF_NOMINAL_VOLTAGE, DEFAULT_NOMINAL_VOLTAGE),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=90,
+                    max=300,
+                    step=0.1,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="V",
+                )
+            ),
+            vol.Optional(
+                CONF_VOLTAGE_SENSOR,
+                default=_current(CONF_VOLTAGE_SENSOR),
+            ): EntitySelector(
+                EntitySelectorConfig(domain="sensor", device_class="voltage")
+            ),
+        }
+        for index in range(OUTLET_COUNT):
+            schema_fields[
                 vol.Optional(
-                    CONF_VOLTAGE_SENSOR,
-                    default=_current(CONF_VOLTAGE_SENSOR),
-                ): EntitySelector(
-                    EntitySelectorConfig(domain="sensor", device_class="voltage")
-                ),
-            }
+                    f"outlet_name_{index}",
+                    default=outlet_names[str(index)],
+                )
+            ] = TextSelector()
+
+        return self.async_show_form(
+            step_id="init", data_schema=vol.Schema(schema_fields)
         )
-        return self.async_show_form(step_id="init", data_schema=options_schema)
 

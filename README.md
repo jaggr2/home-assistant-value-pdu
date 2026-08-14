@@ -66,6 +66,10 @@ During setup you provide:
 
 **Username, password, poll interval, nominal voltage and voltage source can all be changed later** via the entry's **Configure** (options) dialog — the integration reloads automatically, so credential changes don't require removing and re-adding the entry.
 
+### Outlet names
+
+The options dialog also lets you give **each outlet a name** (e.g. which device is plugged into it). These names become the friendly names of the outlet switches and cycle buttons (`Value PDU <name>`), while entity IDs stay fixed to the port number — so renaming never breaks your automations. They are stored in Home Assistant, not on the PDU.
+
 ### `value_pdu.cycle_outlet` service
 
 Power-cycles an outlet for use in automations (buttons cover this in the UI):

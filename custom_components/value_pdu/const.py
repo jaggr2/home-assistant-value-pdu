@@ -21,6 +21,7 @@ CONF_PASSWORD = "password"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_NOMINAL_VOLTAGE = "nominal_voltage"
 CONF_VOLTAGE_SENSOR = "voltage_sensor"
+CONF_OUTLET_NAMES = "outlet_names"
 
 DEFAULT_USERNAME = "admin"
 DEFAULT_PASSWORD = "admin"
@@ -28,6 +29,7 @@ DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_NOMINAL_VOLTAGE = 230.0
 
 OUTLET_COUNT = 8
+DEFAULT_OUTLET_NAMES = [f"Outlet {index + 1}" for index in range(OUTLET_COUNT)]
 
 # status.xml fields
 FIELD_CURRENT = "cur0"

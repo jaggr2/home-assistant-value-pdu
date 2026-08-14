@@ -25,13 +25,21 @@
     "step": {
       "init": {
         "title": "Value IP PDU options",
-        "description": "Adjust credentials, polling and power calculation settings.\n\nVoltage: the PDU's web interface does not expose voltage (only its display shows it). Select a voltage source sensor for accurate power readings, or use the nominal voltage constant.",
+        "description": "Adjust credentials, polling and power calculation settings.\n\nVoltage: the PDU's web interface does not expose voltage (only its display shows it). Select a voltage source sensor for accurate power readings, or use the nominal voltage constant.\n\nOutlet names: give each port a memorable name (e.g. which device is plugged into it).",
         "data": {
           "username": "Username",
           "password": "Password",
           "scan_interval": "Poll interval (seconds)",
           "nominal_voltage": "Nominal voltage (V)",
-          "voltage_sensor": "Voltage source sensor"
+          "voltage_sensor": "Voltage source sensor",
+          "outlet_name_0": "Outlet 1 name",
+          "outlet_name_1": "Outlet 2 name",
+          "outlet_name_2": "Outlet 3 name",
+          "outlet_name_3": "Outlet 4 name",
+          "outlet_name_4": "Outlet 5 name",
+          "outlet_name_5": "Outlet 6 name",
+          "outlet_name_6": "Outlet 7 name",
+          "outlet_name_7": "Outlet 8 name"
         }
       }
     }

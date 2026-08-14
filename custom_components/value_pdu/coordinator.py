@@ -14,9 +14,11 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .const import (
     CONF_NOMINAL_VOLTAGE,
+    CONF_OUTLET_NAMES,
     CONF_SCAN_INTERVAL,
     CONF_VOLTAGE_SENSOR,
     DEFAULT_NOMINAL_VOLTAGE,
+    DEFAULT_OUTLET_NAMES,
     DOMAIN,
     MANUFACTURER,
     MIN_ENERGY_PERSIST_SECONDS,
@@ -82,6 +84,14 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
     def voltage(self) -> float:
         """Voltage value used for the last power calculation."""
         return self._last_voltage
+
+    def outlet_name(self, index: int) -> str:
+        """Friendly name configured for an outlet (falls back to 'Outlet N')."""
+        names = self._entry.options.get(CONF_OUTLET_NAMES, {})
+        name = names.get(str(index))
+        if name and name.strip():
+            return name.strip()
+        return DEFAULT_OUTLET_NAMES[index]
 
     # ------------------------------------------------------------------
     # Voltage resolution
