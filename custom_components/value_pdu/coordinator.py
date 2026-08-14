@@ -188,7 +188,8 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
         locked = [index + 1 for index in sorted(outlets) if self.outlet_locked(index)]
         if locked:
             raise HomeAssistantError(
-                f"Outlet {', '.join(str(i) for i in locked)} is read-only"
+                f"Outlet {', '.join(str(i) for i in locked)} is read-only — "
+                "it cannot be switched"
             )
         busy = self._busy_outlets(outlets)
         if busy:

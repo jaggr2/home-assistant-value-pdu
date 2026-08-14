@@ -74,7 +74,7 @@ The options dialog also lets you give **each outlet a name** (e.g. which device 
 
 For security, you can mark any outlet as **read-only** in the options dialog. A read-only outlet:
 
-- Keeps its **switch visible with live on/off state**, but any ON/OFF command is ignored (logged as a warning).
+- Keeps its **switch visible with live on/off state**, but any ON/OFF command is **rejected with a clear error** ("*Outlet N is read-only — it cannot be switched*").
 - Gets **no power-cycle button** (and `value_pdu.cycle_outlet` refuses it).
 - The lockout is enforced in the coordinator — the single control path — so switches, buttons and services can never bypass it.
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -13,8 +12,6 @@ from homeassistant.components.switch import SwitchEntity
 
 from .const import DOMAIN, OUTLET_COUNT, SWITCH_DEVICE_CLASS
 from .coordinator import ValuePDUCoordinator
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -62,24 +59,14 @@ class ValuePDUOutletSwitch(CoordinatorEntity, SwitchEntity):
         on_delay, off_delay = self.coordinator.outlet_delay(self._index)
         return {"on_delay": on_delay, "off_delay": off_delay}
 
-    async def _async_guard_locked(self) -> bool:
-        """Return True (and ignore the command) if the outlet is read-only."""
-        if self.coordinator.outlet_locked(self._index):
-            _LOGGER.warning(
-                "Outlet %d is read-only — command ignored", self._index + 1
-            )
-            await self.coordinator.async_request_refresh()
-            return True
-        return False
-
     async def async_turn_on(self, **kwargs) -> None:
-        """Turn the outlet on."""
-        if await self._async_guard_locked():
-            return
+        """Turn the outlet on.
+
+        Rejected (with a clear error) if the outlet is read-only or still
+        switching within its ON/OFF delay window.
+        """
         await self.coordinator.async_turn_on({self._index})
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the outlet off."""
-        if await self._async_guard_locked():
-            return
         await self.coordinator.async_turn_off({self._index})
