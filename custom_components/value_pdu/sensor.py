@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -24,7 +25,7 @@ async def async_setup_entry(
     )
 
 
-class ValuePDUSensor(CoordinatorEntity):
+class ValuePDUSensor(CoordinatorEntity, SensorEntity):
     """A sensor whose value is pulled from the coordinator."""
 
     def __init__(self, coordinator: ValuePDUCoordinator, entry: ConfigEntry, descriptor: dict) -> None:
@@ -40,6 +41,17 @@ class ValuePDUSensor(CoordinatorEntity):
         self._attr_icon = descriptor["icon"]
         if descriptor.get("entity_category"):
             self._attr_entity_category = EntityCategory(descriptor["entity_category"])
+
+    async def async_added_to_hass(self) -> None:
+        """Resume the energy counter from HA's restored state across restarts."""
+        await super().async_added_to_hass()
+        if self._descriptor["key"] == "energy":
+            restored = self.hass.states.get(self.entity_id)
+            if restored is not None:
+                try:
+                    self.coordinator.set_energy_base(float(restored.state))
+                except (TypeError, ValueError):
+                    pass
 
     @property
     def native_value(self):

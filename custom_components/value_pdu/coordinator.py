@@ -21,7 +21,6 @@ from .const import (
     DEFAULT_OUTLET_NAMES,
     DOMAIN,
     MANUFACTURER,
-    MIN_ENERGY_PERSIST_SECONDS,
     MODEL,
     OP_OFF,
     OP_ON,
@@ -48,7 +47,6 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
         self._last_sample_time: float | None = None
         self._last_power_w: float = 0.0
         self._last_voltage: float = 0.0
-        self._last_energy_persist = 0.0
         super().__init__(
             hass,
             _LOGGER,
@@ -74,6 +72,11 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
     @property
     def energy_kwh(self) -> float:
         return self._energy_kwh
+
+    def set_energy_base(self, value: float) -> None:
+        """Seed the energy counter (e.g. from HA's restored sensor state)."""
+        if value > self._energy_kwh:
+            self._energy_kwh = value
 
     @property
     def power_w(self) -> float:
@@ -189,15 +192,6 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
 
         if gap > 0:
             self._energy_kwh = integrate_energy_kwh(self._energy_kwh, self._last_power_w, gap)
-            self._maybe_persist_energy(now)
 
         self._last_sample_time = now
         self._last_power_w = power_w
-
-    def _maybe_persist_energy(self, now: float) -> None:
-        """Throttled write of the energy counter into the config entry."""
-        if now - self._last_energy_persist < MIN_ENERGY_PERSIST_SECONDS:
-            return
-        self._last_energy_persist = now
-        data = {**self._entry.data, "energy_kwh": self._energy_kwh}
-        self.hass.config_entries.async_update_entry(self._entry, data=data)

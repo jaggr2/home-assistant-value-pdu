@@ -47,7 +47,6 @@ MANUFACTURER = "VALUE"
 MODEL = "IP PDU (8-port switched + metered)"
 
 MIN_UPDATE_INTERVAL_SECONDS = 10
-MIN_ENERGY_PERSIST_SECONDS = 60
 
 # Battery/auxiliary metadata is not used; these descriptors drive entity creation.
 SENSOR_DESCRIPTORS: tuple = (
