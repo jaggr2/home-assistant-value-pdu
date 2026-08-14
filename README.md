@@ -29,10 +29,12 @@ Settings → **Energy** → *Electricity grid* → **Add consumption** → *Use 
 
 ## Power calculation & voltage source
 
-The PDU's HTTP API **does not expose voltage** (the device measures it but never serves it). Power is therefore computed as `W = voltage × current`, where *voltage* is resolved in this order:
+**Why an external voltage source?** The VALUE IP PDU measures voltage and shows it on its front LED display — but its web interface **never exposes it** (the firmware only serves current, temperature, humidity and outlet states via HTTP; voltage appears in the UI solely as a threshold-setting field). Since we can't read the real voltage over the network, power is computed as `W = voltage × current`, where *voltage* is resolved in this order:
 
 1. **Voltage source sensor** — an HA entity you select in the options (e.g. a rack PDU meter or smart plug that already measures the feed voltage). Read live on every poll.
 2. **Nominal voltage** — configurable constant, default `230 V`, used when no source sensor is configured.
+
+For the most accurate **energy dashboard** numbers, point the voltage source at a real voltage sensor measuring the same feed the PDU is on. If you only care about relative consumption, the nominal constant is fine.
 
 ## Installation
 

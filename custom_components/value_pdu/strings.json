@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Value IP PDU",
-        "description": "Connect to your VALUE IP PDU at its HTTP management interface.",
+        "description": "Connect to your VALUE IP PDU at its HTTP management interface.\n\nNote: the PDU measures and shows voltage on its display, but the web interface never exposes it. Power (W) is therefore computed as voltage × current — optionally from a separate voltage source sensor, otherwise from the nominal voltage constant below.",
         "data": {
           "host": "Host (IP address or hostname)",
           "username": "Username",
@@ -25,7 +25,7 @@
     "step": {
       "init": {
         "title": "Value IP PDU options",
-        "description": "Adjust credentials, polling and power calculation settings.",
+        "description": "Adjust credentials, polling and power calculation settings.\n\nVoltage: the PDU's web interface does not expose voltage (only its display shows it). Select a voltage source sensor for accurate power readings, or use the nominal voltage constant.",
         "data": {
           "username": "Username",
           "password": "Password",
