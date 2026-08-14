@@ -4,9 +4,9 @@
   "codeowners": ["@jaggr2"],
   "config_flow": true,
   "documentation": "https://github.com/jaggr2/home-assistant-value-pdu",
-  "issue_tracker": "https://github.com/jaggr2/home-assistant-value-pdu/issues",
   "integration_type": "device",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/jaggr2/home-assistant-value-pdu/issues",
   "requirements": [],
   "version": "0.1.0"
 }
