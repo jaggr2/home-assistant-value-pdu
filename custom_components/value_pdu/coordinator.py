@@ -9,11 +9,13 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
     CONF_NOMINAL_VOLTAGE,
+    CONF_OUTLET_LOCKED,
     CONF_OUTLET_NAMES,
     CONF_SCAN_INTERVAL,
     CONF_VOLTAGE_SENSOR,
@@ -96,6 +98,11 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
             return name.strip()
         return DEFAULT_OUTLET_NAMES[index]
 
+    def outlet_locked(self, index: int) -> bool:
+        """Return whether an outlet is locked (read-only)."""
+        locked = self._entry.options.get(CONF_OUTLET_LOCKED, {})
+        return bool(locked.get(str(index)))
+
     # ------------------------------------------------------------------
     # Voltage resolution
     # ------------------------------------------------------------------
@@ -132,7 +139,16 @@ class ValuePDUCoordinator(DataUpdateCoordinator[PDUSnapshot]):
     # Outlet control
     # ------------------------------------------------------------------
     async def async_control_outlets(self, outlets: set[int], op: str) -> None:
-        """Send a control command and refresh state afterwards."""
+        """Send a control command and refresh state afterwards.
+
+        Outlets marked read-only are rejected — this is the security boundary
+        all control paths (switches, cycle buttons, services) go through.
+        """
+        locked = [index + 1 for index in sorted(outlets) if self.outlet_locked(index)]
+        if locked:
+            raise HomeAssistantError(
+                f"Outlet {', '.join(str(i) for i in locked)} is read-only"
+            )
         await self._api.async_control_outlets(outlets, op)
         await self.async_request_refresh()
 

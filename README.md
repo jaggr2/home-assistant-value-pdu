@@ -10,8 +10,8 @@ Provides per-outlet **switch** control (ON/OFF), per-outlet **power-cycle button
 
 | Entity | Type | Notes |
 |---|---|---|
-| Outlet 1–8 | Switch | Turn each of the 8 C13 outlets on/off |
-| Outlet 1–8 cycle | Button | Power-cycle (ON/OFF) a single outlet |
+| Outlet 1–8 | Switch | Turn each of the 8 C13 outlets on/off (read-only if locked) |
+| Outlet 1–8 cycle | Button | Power-cycle (ON/OFF) a single outlet (hidden for read-only outlets) |
 | Total current | Sensor | A (measured by the PDU) |
 | Total power | Sensor | W = voltage × current (computed) |
 | Total energy | Sensor | kWh (accumulated, survives HA restarts) |
@@ -69,6 +69,16 @@ During setup you provide:
 ### Outlet names
 
 The options dialog also lets you give **each outlet a name** (e.g. which device is plugged into it). These names become the friendly names of the outlet switches and cycle buttons (`Value PDU <name>`), while entity IDs stay fixed to the port number — so renaming never breaks your automations. They are stored in Home Assistant, not on the PDU.
+
+### Read-only (lockout) outlets
+
+For security, you can mark any outlet as **read-only** in the options dialog. A read-only outlet:
+
+- Keeps its **switch visible with live on/off state**, but any ON/OFF command is ignored (logged as a warning).
+- Gets **no power-cycle button** (and `value_pdu.cycle_outlet` refuses it).
+- The lockout is enforced in the coordinator — the single control path — so switches, buttons and services can never bypass it.
+
+Automations can still **read** the switch state of a locked outlet; they just cannot change it.
 
 ### `value_pdu.cycle_outlet` service
 

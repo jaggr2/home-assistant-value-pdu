@@ -25,7 +25,7 @@
     "step": {
       "init": {
         "title": "Value IP PDU options",
-        "description": "Adjust credentials, polling and power calculation settings.\n\nVoltage: the PDU's web interface does not expose voltage (only its display shows it). Select a voltage source sensor for accurate power readings, or use the nominal voltage constant.\n\nOutlet names: give each port a memorable name (e.g. which device is plugged into it).",
+        "description": "Adjust credentials, polling and power calculation settings.\n\nVoltage: the PDU's web interface does not expose voltage (only its display shows it). Select a voltage source sensor for accurate power readings, or use the nominal voltage constant.\n\nOutlet names: give each port a memorable name (e.g. which device is plugged into it).\n\nRead-only: lock an outlet so it cannot be switched or power-cycled (security). Its state stays visible.",
         "data": {
           "username": "Username",
           "password": "Password",
@@ -39,7 +39,15 @@
           "outlet_name_4": "Outlet 5 name",
           "outlet_name_5": "Outlet 6 name",
           "outlet_name_6": "Outlet 7 name",
-          "outlet_name_7": "Outlet 8 name"
+          "outlet_name_7": "Outlet 8 name",
+          "outlet_locked_0": "Outlet 1 read-only",
+          "outlet_locked_1": "Outlet 2 read-only",
+          "outlet_locked_2": "Outlet 3 read-only",
+          "outlet_locked_3": "Outlet 4 read-only",
+          "outlet_locked_4": "Outlet 5 read-only",
+          "outlet_locked_5": "Outlet 6 read-only",
+          "outlet_locked_6": "Outlet 7 read-only",
+          "outlet_locked_7": "Outlet 8 read-only"
         }
       }
     }

@@ -22,6 +22,7 @@ CONF_SCAN_INTERVAL = "scan_interval"
 CONF_NOMINAL_VOLTAGE = "nominal_voltage"
 CONF_VOLTAGE_SENSOR = "voltage_sensor"
 CONF_OUTLET_NAMES = "outlet_names"
+CONF_OUTLET_LOCKED = "outlet_locked"
 
 DEFAULT_USERNAME = "admin"
 DEFAULT_PASSWORD = "admin"

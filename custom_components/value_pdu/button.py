@@ -19,8 +19,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Value IP PDU power-cycle buttons."""
     coordinator: ValuePDUCoordinator = hass.data[DOMAIN][entry.entry_id]
+    # Read-only (locked) outlets get no cycle button.
     async_add_entities(
-        ValuePDUCycleButton(coordinator, entry, index) for index in range(OUTLET_COUNT)
+        ValuePDUCycleButton(coordinator, entry, index)
+        for index in range(OUTLET_COUNT)
+        if not coordinator.outlet_locked(index)
     )
 
 
@@ -39,4 +42,5 @@ class ValuePDUCycleButton(CoordinatorEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Power-cycle the outlet."""
+        # Belt-and-suspenders guard: lockouts are enforced by the coordinator.
         await self.coordinator.async_cycle({self._index})

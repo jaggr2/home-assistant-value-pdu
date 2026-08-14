@@ -11,6 +11,8 @@ from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResu
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
+    BooleanSelector,
+    BooleanSelectorConfig,
     EntitySelector,
     EntitySelectorConfig,
     NumberSelector,
@@ -24,6 +26,7 @@ from homeassistant.helpers.selector import (
 from .const import (
     CONF_HOST,
     CONF_NOMINAL_VOLTAGE,
+    CONF_OUTLET_LOCKED,
     CONF_OUTLET_NAMES,
     CONF_PASSWORD,
     CONF_SCAN_INTERVAL,
@@ -133,7 +136,12 @@ class ValuePDUOptionsFlow(OptionsFlow):
                 str(index): user_input.pop(f"outlet_name_{index}")
                 for index in range(OUTLET_COUNT)
             }
+            locked = {
+                str(index): user_input.pop(f"outlet_locked_{index}")
+                for index in range(OUTLET_COUNT)
+            }
             user_input[CONF_OUTLET_NAMES] = names
+            user_input[CONF_OUTLET_LOCKED] = locked
             return self.async_create_entry(title="", data=user_input)
 
         options = self._config_entry.options
@@ -146,6 +154,10 @@ class ValuePDUOptionsFlow(OptionsFlow):
             str(index): options.get(CONF_OUTLET_NAMES, {}).get(
                 str(index), DEFAULT_OUTLET_NAMES[index]
             )
+            for index in range(OUTLET_COUNT)
+        }
+        outlet_locked = {
+            str(index): bool(options.get(CONF_OUTLET_LOCKED, {}).get(str(index)))
             for index in range(OUTLET_COUNT)
         }
 
@@ -195,6 +207,12 @@ class ValuePDUOptionsFlow(OptionsFlow):
                     default=outlet_names[str(index)],
                 )
             ] = TextSelector()
+            schema_fields[
+                vol.Optional(
+                    f"outlet_locked_{index}",
+                    default=outlet_locked[str(index)],
+                )
+            ] = BooleanSelector(BooleanSelectorConfig())
 
         return self.async_show_form(
             step_id="init", data_schema=vol.Schema(schema_fields)
